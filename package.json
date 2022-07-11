@@ -1,6 +1,6 @@
 {
   "name": "@statewalker/services",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Services/extensions implementation",
   "keywords": [],
   "homepage": "https://github.com/statewalker/statewalker-services",
