@@ -16,7 +16,11 @@
     "index.js"
   ],
   "devDependencies": {
-    "@statewalker/rollup": "https://github.com/statewalker/statewalker-rollup.git#^v0.1"
+    "@statewalker/rollup": "^0.1",
+    "eslint": "^8",
+    "expect.js": "^0.3",
+    "mocha": "^10",
+    "rollup": "^2"
   },
   "module": "dist/index.js",
   "main": "dist/index.js",
@@ -28,7 +32,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/statewalker/statewalker-services.git"
+    "url": "git@github.com:statewalker/statewalker-services.git"
   },
   "scripts": {
     "eslint": "eslint src",
