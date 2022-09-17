@@ -1,2 +1,4 @@
+import ns from "@statewalker/ns";
 import newServices  from "./newServices.js";
-export default newServices();
+ns.services = ns.services || newServices();
+export default ns.services;
