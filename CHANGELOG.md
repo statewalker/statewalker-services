@@ -1,5 +1,11 @@
 # @statewalker/services
 
+## 0.2.1
+
+### Patch Changes
+
+- Update export configurations in the package.json
+
 ## 0.2.0
 
 ### Minor Changes
