@@ -1,5 +1,13 @@
 # @statewalker/services
 
+## 0.2.3
+
+### Patch Changes
+
+- Update rollup and dependencies
+- Updated dependencies
+  - @statewalker/ns@0.1.3
+
 ## 0.2.2
 
 ### Patch Changes
