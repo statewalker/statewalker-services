@@ -1,5 +1,5 @@
-import services from "./services.js";
-import resolveDependencies from "./resolveDependencies.js";
+import services from "./services.ts";
+import resolveDependencies from "./resolveDependencies.ts";
 
 export default function publishService(options) {
   if (!options.serviceKey) { throw new Error('"serviceKey" is not defined'); }

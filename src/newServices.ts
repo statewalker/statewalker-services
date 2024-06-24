@@ -1,4 +1,4 @@
-import newService from "./newService.js"
+import newService from "./newService.ts"
 
 export default function newServices({ services = {}, index = {} } = {}) {
   function getService(key, create = true) {

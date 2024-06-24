@@ -1,5 +1,5 @@
-import { default as expect } from 'expect.js';
-import newServices from '../src/newServices.js';
+import { describe, it, expect } from "./deps.ts";
+import newServices from '../src/newServices.ts';
 
 describe('newServices', () => {
 
@@ -13,16 +13,16 @@ describe('newServices', () => {
     const consumer = ext1.newConsumer(key, (v) => values = v);
     const provider = ext2.newProvider(key);
 
-    expect(values).to.eql([]);
-    expect(consumer()).to.eql([]);
+    expect(values).toEqual([]);
+    expect(consumer()).toEqual([]);
 
     provider('one');
-    expect(values).to.eql(['one']);
-    expect(consumer()).to.eql(['one']);
+    expect(values).toEqual(['one']);
+    expect(consumer()).toEqual(['one']);
 
     provider('two');
-    expect(values).to.eql(['two']);
-    expect(consumer()).to.eql(['two']);
+    expect(values).toEqual(['two']);
+    expect(consumer()).toEqual(['two']);
 
     await ext1.close();
     await ext2.close();

@@ -1,4 +1,4 @@
-import services from "./services.js";
+import services from "./services.ts";
 
 export default function resolveDependencies(options) {
   let values = {};
