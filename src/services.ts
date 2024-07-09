@@ -1,4 +1,5 @@
 import ns from "./ns.ts";
 import newServices  from "./newServices.ts";
-ns.services = ns.services || newServices();
+export const services = newServices();
+ns.services = ns.services || services;
 export default ns.services;

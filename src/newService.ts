@@ -1,5 +1,6 @@
 import type { Service, ServiceConsumer, ServiceProvider } from "./types.ts";
 
+export default newService;
 /**
  * Creates and returns a new service allowing to provide and consume
  * service objects.
@@ -71,4 +72,3 @@ export function newService<T = any>(): Service<T> {
   return service;
 }
 
-export default newService;

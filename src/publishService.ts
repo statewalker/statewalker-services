@@ -1,8 +1,10 @@
+import { services as globalServices } from "./services.ts";
 import resolveDependencies from "./resolveDependencies.ts";
 import type { Cardinality, ServiceProvider, Services } from "./types.ts";
 
-export default function publishService<T, I = unknown>({
-  services,
+export default publishService;
+export function publishService<T, I = unknown>({
+  services = globalServices,
   dependencies,
   key,
   serviceKey,

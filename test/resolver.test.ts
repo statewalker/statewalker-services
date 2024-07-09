@@ -1,8 +1,8 @@
 import { describe, it, expect } from "./deps.ts";
-import resolveDependencies from "../src/resolveDependencies.ts";
+import { resolver } from "../src/resolver.ts";
 import newServices from "../src/newServices.ts";
 
-describe("resolveDependencies", () => {
+describe("resolver", () => {
   it("should track single service with a specific cardinality", async () => {
     const services = newServices();
     const registrations: (() => unknown)[] = [];
@@ -15,7 +15,7 @@ describe("resolveDependencies", () => {
     let activated: { selectedFile: string[] } | undefined;
     let deactivated: { selectedFile?: string[] } | undefined;
     let updated: { selectedFile: string[] } | undefined;
-    const unsubscribe = resolveDependencies({
+    const unsubscribe = resolver({
       subscribe: (key, callback) => services.newConsumer(key, callback),
       dependencies: {
         selectedFile: [2, 2],
