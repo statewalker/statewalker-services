@@ -1,40 +1,70 @@
-import services from "./services.ts";
+// import services from "./services.ts";
+import type { Cardinality } from "./types.ts";
 
-export default function resolveDependencies(options) {
-  let values = {};
-  let registry = [];
+export default function resolveDependencies<
+  T = Record<string, any>,
+  I = unknown,
+>({
+  subscribe,
+  dependencies,
+  activate,
+  deactivate,
+  update,
+}: {
+  subscribe: (
+    key: keyof T,
+    callback: (list: T[keyof T][]) => void
+  ) => () => unknown;
+  dependencies?: Record<keyof T, Cardinality>;
+  activate: (values: T) => I;
+  update?: (values: T) => I;
+  deactivate?: (values: Partial<T>) => unknown;
+}): () => void {
+  let values: Record<string, any> = {};
+  let registry: (() => unknown)[] = [];
+  update = update || activate;
   let active = false;
-  const entries = Object.entries(options.dependencies || {});
-  const notify = (values) => {
+  const entries = Object.entries(dependencies || {}) as [
+    keyof T,
+    Cardinality,
+  ][];
+  const notify = (values: Partial<T>) => {
+    values = {...values};
     if (values && Object.keys(values).length === entries.length) {
-      if (active) { options.update && options.update(values); }
-      else { active = true; options.activate && options.activate(values); }
+      if (active) {
+        update?.(values as T);
+      } else {
+        active = true;
+        activate?.(values as T);
+      }
     } else if (active) {
       active = false;
-      options.deactivate && options.deactivate(values || {});
+      deactivate?.(values || {});
     }
-  }
+  };
   if (!entries.length) notify({});
   else {
     for (let [key, num] of entries) {
-      let min = 0, max = +Infinity;
-      if (Array.isArray(num)) { min = num[0] || 0, max = num[1] || Infinity; }
-      else if (!isNaN(num)) min = num;
+      let min = 0,
+        max = +Infinity;
+      if (Array.isArray(num)) {
+        (min = num[0] || 0), (max = num[1] || Infinity);
+      } else if (!isNaN(num)) min = num;
       ((key, min, max) => {
-        registry.push(services.newConsumer(key, (list) => {
-          if (list.length >= min && list.length <= max) {
-            values[key] = list;
-          } else delete values[key];
-          notify(values = { ...values });
-        }));
-      })(key, min, max);
+        registry.push(
+          subscribe(key as keyof T, (list) => {
+            if (list.length >= min && list.length <= max) {
+              values[key] = list;
+            } else delete values[key];
+            notify((values = { ...values } as Partial<T>));
+          })
+        );
+      })(String(key), min, max);
     }
   }
-  return {
-    close: () => {
-      registry.forEach(r => r.close());
-      registry = [];
-      notify(null);
-    }
+  return () => {
+    registry.forEach((r) => r());
+    registry = [];
+    notify({});
   };
 }

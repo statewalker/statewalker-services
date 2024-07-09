@@ -1,29 +1,46 @@
-import newService from "./newService.ts"
+import type { Service, Services } from "./types.ts";
+import { newService } from "./newService.ts";
 
-export default function newServices({ services = {}, index = {} } = {}) {
-  function getService(key, create = true) {
-    let service = index[key];
-    if (!service && create) { service = index[key] = newService(); }
+export default newServices;
+
+export function newServices({
+  index = {},
+}: {
+  index?: Record<string, Service<any>>;
+} = {}): Services {
+  function getService<T>(key: string): Service<T> {
+    let service: undefined | Service<T> = index[key] as Service<T>;
+    if (!service) {
+      index[key] = service = newService<T>();
+    }
     return service;
   }
-  function newConsumer(serviceKey, action) {
-    const Service = getService(serviceKey);
-    return Service.newConsumer((list) => action(list));
+  function newConsumer<T>(
+    serviceKey: string,
+    action: (values: T[]) => unknown
+  ) {
+    const Service = getService<T>(serviceKey) as Service<T>;
+    return Service.newConsumer((values) => action(values));
   }
-  function newProvider(serviceKey, initial) {
-    const Service = getService(serviceKey);
+  function newProvider<T>(serviceKey: string, initial?: T) {
+    const Service = getService<T>(serviceKey) as Service<T>;
     return Service.newProvider(initial);
   }
+  let closed = false;
   function close() {
+    closed = true;
     for (const service of Object.values(index)) {
       service.close();
     }
   }
-  services.index = index;
-  services.getService = getService;
-  services.newService = newService;
-  services.newConsumer = newConsumer;
-  services.newProvider = newProvider;
-  services.close = close;
-  return services;
+  return {
+    index,
+    getService,
+    newConsumer,
+    newProvider,
+    close,
+    get closed() {
+      return closed;
+    },
+  };
 }

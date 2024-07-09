@@ -1,32 +1,63 @@
-import services from "./services.ts";
 import resolveDependencies from "./resolveDependencies.ts";
+import type { Cardinality, ServiceProvider, Services } from "./types.ts";
 
-export default function publishService(options) {
-  if (!options.serviceKey) { throw new Error('"serviceKey" is not defined'); }
-  if (typeof (options.activateService || options.activate) !== 'function') {
-    throw new Error('A mandatory "activateService" method is not defined');
+export default function publishService<T, I = unknown>({
+  services,
+  dependencies,
+  key,
+  serviceKey,
+  activate,
+  deactivate,
+  update,
+  ...options
+}: {
+  key?: string;
+  serviceKey?: string;
+  services: Services;
+  dependencies?: Record<keyof T, Cardinality>;
+  activate: (values: T) => I;
+  update?: (values: T) => I;
+  deactivate?: (values: Partial<T>) => unknown;
+} & Record<string, any>) {
+  serviceKey = serviceKey || key;
+  if (!serviceKey) {
+    throw new Error('"serviceKey" is not defined');
   }
 
-  const service = services.getService(options.serviceKey, true);
-  let provider, instance;
-  const call = async (method, ...args) => {
-    return (method && await method.call(options, ...args));
-  }
+  const service = services.getService(serviceKey);
+  let provider: ServiceProvider<any>, instance: I | undefined;
+  const call = async (
+    method: (...args: any[]) => unknown | Promise<unknown>,
+    ...args: any[]
+  ) => {
+    return (method && (await method.call(instance, ...args))) as undefined | I;
+  };
   return resolveDependencies({
-    dependencies: options.dependencies,
+    services,
+    dependencies,
     activate: async (deps) => {
-      instance = await call((options.activateService || options.activate), deps, options);
+      instance = await call(activate, deps, options);
       provider = service.newProvider();
-      await provider(instance);
+      provider(instance);
     },
     update: async (deps) => {
-      const newInstance = await call((options.updateService || options.update), instance, deps, options);
-      await provider(instance = newInstance || instance);
+      const newInstance = await call(
+        options.updateService || options.update,
+        instance,
+        deps,
+        options
+      );
+      provider((instance = newInstance || instance));
     },
     deactivate: async (deps) => {
-      await call((options.deactivateService || options.deactivate), instance, deps, options);
-      await provider.close();
-      instance = null;
-    }
+      await call(
+        options.deactivateService || options.deactivate,
+        instance,
+        deps,
+        options
+      );
+      provider.close();
+      instance = undefined;
+    },
   });
 }
