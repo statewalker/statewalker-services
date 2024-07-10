@@ -1,65 +1,59 @@
 import { services as globalServices } from "./services.ts";
-import resolveDependencies from "./resolveDependencies.ts";
+import { resolver } from "./resolver.ts";
 import type { Cardinality, ServiceProvider, Services } from "./types.ts";
 
 export default publishService;
-export function publishService<T, I = unknown>({
+export function publishService<
+  T extends Record<string, any>,
+  I = unknown,
+>({
+  key,
   services = globalServices,
   dependencies,
-  key,
-  serviceKey,
   activate,
   deactivate,
   update,
-  ...options
 }: {
-  key?: string;
-  serviceKey?: string;
-  services: Services;
+  key: string;
+  services?: Services;
   dependencies?: Record<keyof T, Cardinality>;
-  activate: (values: T) => I;
-  update?: (values: T) => I;
-  deactivate?: (values: Partial<T>) => unknown;
-} & Record<string, any>) {
-  serviceKey = serviceKey || key;
-  if (!serviceKey) {
-    throw new Error('"serviceKey" is not defined');
+  activate: (values: T) => undefined | I;
+  update?: (instance: I, values: T) => undefined | I;
+  deactivate?: (instance: I) => unknown;
+}): () => void {
+  let provider: ServiceProvider<I> | undefined;
+  let instance: I | undefined;
+  const doActivate = (values: T) => {
+    provider = services.newProvider(key);
+    instance = activate(values);
+    instance !== undefined && provider(instance);
   }
-
-  const service = services.getService(serviceKey);
-  let provider: ServiceProvider<any>, instance: I | undefined;
-  const call = async (
-    method: (...args: any[]) => unknown | Promise<unknown>,
-    ...args: any[]
-  ) => {
-    return (method && (await method.call(instance, ...args))) as undefined | I;
-  };
-  return resolveDependencies({
-    services,
-    dependencies,
-    activate: async (deps) => {
-      instance = await call(activate, deps, options);
-      provider = service.newProvider();
-      provider(instance);
-    },
-    update: async (deps) => {
-      const newInstance = await call(
-        options.updateService || options.update,
-        instance,
-        deps,
-        options
-      );
-      provider((instance = newInstance || instance));
-    },
-    deactivate: async (deps) => {
-      await call(
-        options.deactivateService || options.deactivate,
-        instance,
-        deps,
-        options
-      );
-      provider.close();
+  const doDeactivate = () => {
+    if (provider) {
+      instance !== undefined && deactivate?.(instance);
       instance = undefined;
+      provider.close();
+      provider = undefined;
+    }
+  }
+  return resolver<T>({
+    dependencies,
+    subscribe: (key: keyof T, callback: (values: any[]) => void) => {
+      return services.newConsumer(key as string, (values) => {
+        return callback(values);
+      }).close
+    },
+    activate: doActivate,
+    deactivate: doDeactivate,
+    update: (values: T) => {
+      if (!provider || instance === undefined) return;
+      if (update) {
+        instance = update?.(instance as I, values) || instance;
+        provider(instance);
+      } else {
+        doDeactivate();
+        doActivate(values);
+      }
     },
   });
 }

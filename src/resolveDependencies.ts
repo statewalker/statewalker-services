@@ -1,7 +1,6 @@
 import { services as globalServices } from "./services.ts";
 import { resolver } from "./resolver.ts";
 import type { Cardinality, Services } from "./types.ts";
-import publishService from "./publishService.ts";
 
 export default resolveDependencies;
 export function resolveDependencies<
@@ -20,7 +19,7 @@ export function resolveDependencies<
   update?: (values: T) => I;
   deactivate?: (values: Partial<T>) => unknown;
 }): () => void {
-  return resolver<T, I>({
+  return resolver<T>({
     dependencies,
     subscribe: (key: keyof T, callback: (values: any[]) => void) =>
       services.newConsumer(key as string, callback).close,

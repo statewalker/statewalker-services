@@ -1,7 +1,7 @@
 import type { Cardinality } from "./types.ts";
 
 export default resolver;
-export function resolver<T = Record<string, any>, I = unknown>({
+export function resolver<T = Record<string, any>>({
   subscribe,
   dependencies,
   activate,
@@ -13,8 +13,8 @@ export function resolver<T = Record<string, any>, I = unknown>({
     callback: (list: T[keyof T][]) => void
   ) => () => unknown;
   dependencies?: Record<keyof T, Cardinality>;
-  activate: (values: T) => I;
-  update?: (values: T) => I;
+  activate: (values: T) => unknown;
+  update?: (values: T) => unknown;
   deactivate?: (values: Partial<T>) => unknown;
 }): () => void {
   let values: Record<string, any> = {};
