@@ -1,4 +1,3 @@
-import { services as globalServices } from "./services.ts";
 import { resolver } from "./resolver.ts";
 import type { Cardinality, ServiceClosable, ServiceProvider, Services } from "./types.ts";
 import { addCloseMethod } from "./addCloseMethod.ts";
@@ -9,14 +8,14 @@ export function publishService<
   I = unknown,
 >({
   key,
-  services = globalServices,
+  services,
   dependencies,
   activate,
   deactivate,
   update,
 }: {
   key: string;
-  services?: Services;
+  services: Services;
   dependencies?: Record<keyof T, Cardinality>;
   activate: (values: T) => undefined | I;
   update?: (instance: I, values: T) => undefined | I;

@@ -1,4 +1,3 @@
-import { services as globalServices } from "./services.ts";
 import { resolver } from "./resolver.ts";
 import type { Cardinality, ServiceClosable, Services } from "./types.ts";
 import { addCloseMethod } from "./addCloseMethod.ts";
@@ -8,13 +7,13 @@ export function resolveDependencies<
   T extends Record<string, any>,
   I = unknown,
 >({
-  services = globalServices,
+  services,
   dependencies,
   activate,
   deactivate,
   update,
 }: {
-  services?: Services;
+  services: Services;
   dependencies?: Record<keyof T, Cardinality>;
   activate: (values: T) => I;
   update?: (values: T) => I;
