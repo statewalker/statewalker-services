@@ -1,6 +1,7 @@
 import { services as globalServices } from "./services.ts";
 import { resolver } from "./resolver.ts";
-import type { Cardinality, ServiceProvider, Services } from "./types.ts";
+import type { Cardinality, ServiceClosable, ServiceProvider, Services } from "./types.ts";
+import { addCloseMethod } from "./addCloseMethod.ts";
 
 export default publishService;
 export function publishService<
@@ -20,7 +21,7 @@ export function publishService<
   activate: (values: T) => undefined | I;
   update?: (instance: I, values: T) => undefined | I;
   deactivate?: (instance: I) => unknown;
-}): () => void {
+}): (() => void) & ServiceClosable {
   let provider: ServiceProvider<I> | undefined;
   let instance: I | undefined;
   const doActivate = (values: T) => {
@@ -36,7 +37,7 @@ export function publishService<
       provider = undefined;
     }
   }
-  return resolver<T>({
+  const close = resolver<T>({
     dependencies,
     subscribe: (key: keyof T, callback: (values: any[]) => void) => {
       return services.newConsumer(key as string, (values) => {
@@ -56,4 +57,5 @@ export function publishService<
       }
     },
   });
+  return addCloseMethod(close, close);
 }
