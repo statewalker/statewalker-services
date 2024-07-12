@@ -51,8 +51,9 @@
     "url": "git@github.com:statewalker/statewalker-services.git"
   },
   "scripts": {
-    "build": "rm -fr ./dist && yarn test && tsup",
+    "build": "yarn clean && yarn test && yarn tsup",
     "prepare": "yarn build",
+    "tsup": "tsup --config ./tsup.config.ts && tsup --config ./tsup.config-core.ts && tsup --config ./tsup.config-deps.ts",
     "watch": "tsup --watch",
     "clean": "rm -rf dist",
     "lint": "eslint",

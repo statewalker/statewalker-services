@@ -5,6 +5,6 @@ export default defineConfig((options: Options) => ({
   ...defaultOptions,
   ...options,
   entryPoints: [
-    "src/index.ts",
+    "src/index.deps.ts",
   ]
 }));
