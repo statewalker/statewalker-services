@@ -62,6 +62,9 @@ export function resolver<T = Record<string, any>>({
   return () => {
     registry.forEach((r) => r());
     registry = [];
-    notify({});
+    if (active) {
+      active = false;
+      deactivate?.({});
+    }
   };
 }
